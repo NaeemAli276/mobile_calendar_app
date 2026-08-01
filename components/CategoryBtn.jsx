@@ -108,7 +108,7 @@ const CategoryBtn = ({
     return (
         <TouchableOpacity
             className={`
-                flex flex-row items-start gap-1 p-1 rounded w-fit px-3 h-8
+                flex flex-row items-start gap-1 p-1 rounded w-fit px-3 h-8 shadow shadow-text/40
             `}
             style={getIconStyle()}
             onPress={onPress}

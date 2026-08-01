@@ -3,14 +3,25 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Calendar } from 'react-native-calendars'
 import CustomCalendarHeader from '../components/CustomCalendarHeader'
-import { Brush, GraduationCap, HeartPlus, Plus, RollerCoaster } from 'lucide-react-native'
-import { HardHat } from 'lucide-react-native'
+import { Plus } from 'lucide-react-native'
 import CategoryBtn from '../components/CategoryBtn'
+import { SwipeListView } from 'react-native-swipe-list-view'
+import TaskItem from '../components/TaskItem'
 
 const index = () => {
 
     const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10))
-    const [tasks, set_tasks] = useState([])
+    const [tasks, set_tasks] = useState([
+        {
+            id: 0,
+            title: 'Go to the biology exam',
+            location: 'University of Bradford, C4.01',
+            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
+            start_time: '10:00',
+            end_time: '12:30',
+            category: 'Education'
+        }
+    ])
     const [selected_category, set_selected_category] = useState('None')
 
     // day names for the specifying the day
@@ -103,6 +114,8 @@ const index = () => {
 
     }
 
+    // used to make text shorter
+
     return (
         <SafeAreaView
             className='flex relative h-screen w-full font-regular'
@@ -113,7 +126,7 @@ const index = () => {
             >
 
                 {/* blue mini background */}
-                <View className='bg-primary w-full h-56 absolute top-0 left-0'></View>
+                <View className='bg-primary w-full h-48 absolute top-0 left-0'></View>
 
                 
 
@@ -188,26 +201,30 @@ const index = () => {
                     />
 
                     <View
-                        className='flex flex-col gap-3 w-full h-full'
+                        className='flex flex-col gap-3 w-full h-fit'
                     >
                         {/* date, dayname */}
                         <View
                             className='flex flex-col gap-0 w-full h-fit'
                         >
 
-                            {/* date in mm/dd/yyyy */}
-                            <Text
-                                className=' text-text/50'
+                            <View
+                                className='flex flex-row-reverse items-center justify-between'
                             >
-                                {formatDate()}
-                            </Text>
+                                {/* date in mm/dd/yyyy */}
+                                <Text
+                                    className=' text-text/50'
+                                >
+                                    {formatDate()}
+                                </Text>
 
-                            {/* day */}
-                            <Text
-                                className='text-xl text-text font-medium'
-                            >
-                                {handleDayNames()}
-                            </Text>
+                                {/* day */}
+                                <Text
+                                    className='text-xl text-text font-medium'
+                                >
+                                    {handleDayNames()}
+                                </Text>
+                            </View>
 
                             <View className='w-full h-px rounded-full bg-text/20 mt-2'></View>
 
@@ -215,7 +232,7 @@ const index = () => {
 
                         {/* category options and task items */}
                         <View
-                            className='flex flex-col gap-2 w-full h-full'
+                            className='flex flex-col gap-2 w-full h-fit'
                         >
 
                             {/* category filter menu */}
@@ -230,12 +247,21 @@ const index = () => {
                                         isActive={selected_category === item}
                                     />
                                 )}
-                                contentContainerClassName='flex gap-2 w-9/10 h-fit'
+                                contentContainerClassName='flex gap-2 w-9/10 h-fit p-0.5'
                             />    
 
                         </View>
                     </View>
 
+                    <SwipeListView
+                        data={tasks}
+                        className='p-1 py-2'
+                        renderItem={(rowData) => (
+                            <TaskItem
+                                data={rowData.item}
+                            />
+                        )}
+                    />
                 </View>
 
 
