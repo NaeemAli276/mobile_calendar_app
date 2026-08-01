@@ -1,13 +1,17 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, FlatList, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Calendar } from 'react-native-calendars'
 import CustomCalendarHeader from '../components/CustomCalendarHeader'
-import { Plus } from 'lucide-react-native'
+import { Brush, GraduationCap, HeartPlus, Plus, RollerCoaster } from 'lucide-react-native'
+import { HardHat } from 'lucide-react-native'
+import CategoryBtn from '../components/CategoryBtn'
 
 const index = () => {
 
     const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10))
+    const [tasks, set_tasks] = useState([])
+    const [selected_category, set_selected_category] = useState('None')
 
     // day names for the specifying the day
     const dayNames = [
@@ -18,6 +22,14 @@ const index = () => {
         'Thursday',
         'Friday',
         'Saturday',
+    ]
+
+    const categories = [
+        'Work',
+        'Fun',
+        'Chores',
+        'Health',
+        'Education'
     ]
 
     // function to change selected_date to the date selected
@@ -79,6 +91,18 @@ const index = () => {
 
     }
 
+    // used for filtering task based on their category
+    const handleCategorySelect = (cat) => {
+
+        if (selected_category === cat) {
+            set_selected_category('None')
+        }
+        else {
+            set_selected_category(cat)
+        }
+
+    }
+
     return (
         <SafeAreaView
             className='flex relative h-screen w-full font-regular'
@@ -91,12 +115,28 @@ const index = () => {
                 {/* blue mini background */}
                 <View className='bg-primary w-full h-56 absolute top-0 left-0'></View>
 
-                {/* header/greeting */}
-                <Text
-                    className='w-full h-fit text-background font-semibold text-2xl pl-8 '
+                
+
+                <View
+                    className='w-full h-fit flex flex-row items-center justify-between px-8 pr-16'
                 >
-                    Hello Naeem
-                </Text>
+                    {/* header/greeting */}
+                    <Text
+                        className='w-full h-fit text-background font-semibold text-2xl'
+                    >
+                        Hello Naeem
+                    </Text>
+
+                    {/* create new task btn */}
+                    <TouchableOpacity
+                        className='p-1 '
+                    >
+                        <Plus
+                            color={'#ffffff'}
+                        />
+                    </TouchableOpacity>
+
+                </View>
 
                 {/* main content */}
                 <View
@@ -147,38 +187,57 @@ const index = () => {
                         }}
                     />
 
-                    {/* date, dayname */}
                     <View
-                        className='flex flex-col gap-0 w-full h-fit'
+                        className='flex flex-col gap-3 w-full h-full'
                     >
-
-                        {/* date in mm/dd/yyyy */}
-                        <Text
-                            className=' text-text/50'
+                        {/* date, dayname */}
+                        <View
+                            className='flex flex-col gap-0 w-full h-fit'
                         >
-                            {formatDate()}
-                        </Text>
 
-                        {/* day */}
-                        <Text
-                            className='text-xl text-text font-medium'
+                            {/* date in mm/dd/yyyy */}
+                            <Text
+                                className=' text-text/50'
+                            >
+                                {formatDate()}
+                            </Text>
+
+                            {/* day */}
+                            <Text
+                                className='text-xl text-text font-medium'
+                            >
+                                {handleDayNames()}
+                            </Text>
+
+                            <View className='w-full h-px rounded-full bg-text/20 mt-2'></View>
+
+                        </View>
+
+                        {/* category options and task items */}
+                        <View
+                            className='flex flex-col gap-2 w-full h-full'
                         >
-                            {handleDayNames()}
-                        </Text>
 
-                        <View className='w-full h-px rounded-full bg-text/20 mt-2'></View>
+                            {/* category filter menu */}
+                            <FlatList
+                                horizontal
+                                data={categories}
+                                keyExtractor={(item, index) => index.toString()}
+                                renderItem={({item}) => (
+                                    <CategoryBtn
+                                        name={item}  
+                                        onPress={() => handleCategorySelect(item)}
+                                        isActive={selected_category === item}
+                                    />
+                                )}
+                                contentContainerClassName='flex gap-2 w-9/10 h-fit'
+                            />    
 
+                        </View>
                     </View>
-
-                    {/*  */}
 
                 </View>
 
-                <TouchableOpacity
-                    className='absolute bottom-12 right-6 p-2 rounded-full bg-primary z-20'
-                >
-                    <Plus size={36} strokeWidth={1.2} color={'#ffffff'}/>
-                </TouchableOpacity>
 
             </View>
 
