@@ -3,25 +3,58 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Calendar } from 'react-native-calendars'
 import CustomCalendarHeader from '../components/CustomCalendarHeader'
-import { Plus } from 'lucide-react-native'
+import { Plus, Trash2, Pencil } from 'lucide-react-native'
 import CategoryBtn from '../components/CategoryBtn'
 import { SwipeListView } from 'react-native-swipe-list-view'
 import TaskItem from '../components/TaskItem'
 
 const index = () => {
 
-    const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10))
-    const [tasks, set_tasks] = useState([
+    const tasks = ([
         {
             id: 0,
-            title: 'Go to the biology exam',
-            location: 'University of Bradford, C4.01',
+            title: 'Biology exam',
+            location: 'UoB, C4.01',
             description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            start_time: '10:00',
-            end_time: '12:30',
-            category: 'Education'
+            time: '10:00 AM',
+            category: 'Education',
+            date: '2026-09-22'
+        },
+        {
+            id: 1,
+            title: 'Clean the house',
+            location: 'Home',
+            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
+            time: '10:00 AM',
+            category: 'Chores',
+            date: '2026-09-22'
+        },
+        {
+            id: 2,
+            title: 'Finish the fyp project',
+            location: 'Richmond',
+            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
+            time: '01:00 PM',
+            category: 'Education',
+            date: '2026-09-22'
+        },
+        {
+            id: 3,
+            title: 'Finish the calendar component design',
+            location: 'Richmond',
+            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit Lorem ipsum, dolor sit',
+            time: '01:00 PM',
+            category: 'Work',
+            date: '2026-09-22'
         }
     ])
+
+    const [filtered_tasks, set_filtered_tasks] = useState([])
+
+    // const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10)) 
+    const [selected_date, set_selected_date] = useState('2026-09-22')    
+
+
     const [selected_category, set_selected_category] = useState('None')
 
     // day names for the specifying the day
@@ -45,8 +78,6 @@ const index = () => {
 
     // function to change selected_date to the date selected
     const handle_day_select = (day) => {
-        console.log(day)
-
         set_selected_date(day)   
     }
 
@@ -80,7 +111,7 @@ const index = () => {
     };
 
     // converts the date into this format 'Jul 27 2026'
-    const formatDate = () => {
+    const format_date = () => {
         const date = new Date(selected_date);
         const month = date.toLocaleString('default', { month: 'short' });
         const day = date.getDate();
@@ -89,7 +120,7 @@ const index = () => {
     };
 
     // gets the current day name from the selected_date 
-    const handleDayNames = () => {
+    const handle_day_names = () => {
 
         const currentDayName = new Date(selected_date).getDay()
 
@@ -103,7 +134,7 @@ const index = () => {
     }
 
     // used for filtering task based on their category
-    const handleCategorySelect = (cat) => {
+    const handle_category_select = (cat) => {
 
         if (selected_category === cat) {
             set_selected_category('None')
@@ -115,6 +146,41 @@ const index = () => {
     }
 
     // used to make text shorter
+    const truncateText = () => {
+
+    }
+
+    // filters tasks based on their category
+    const handle_filter_tasks = () => {
+
+        if (selected_category === 'None') {            
+            const filtered_tasks = tasks.filter((task) => {
+                return task.date === selected_date
+            })
+
+            set_filtered_tasks(filtered_tasks)
+        }
+        else {
+            const filtered_tasks = tasks.filter((task) => {
+                return (task.date === selected_date) && (task.category === selected_category)
+            }) 
+
+            set_filtered_tasks(filtered_tasks)
+
+        }
+
+    }
+
+    useEffect(() => {
+        handle_filter_tasks(selected_date,selected_category)
+    }, [])
+
+    useEffect(() => {
+        console.log('selected_category: ', selected_category)
+        console.log('selected_date: ', selected_date)
+        console.log('filtered_tasks: ', filtered_tasks)
+        handle_filter_tasks(selected_date,selected_category)
+    }, [selected_category, selected_date])
 
     return (
         <SafeAreaView
@@ -127,8 +193,6 @@ const index = () => {
 
                 {/* blue mini background */}
                 <View className='bg-primary w-full h-48 absolute top-0 left-0'></View>
-
-                
 
                 <View
                     className='w-full h-fit flex flex-row items-center justify-between px-8 pr-16'
@@ -215,14 +279,14 @@ const index = () => {
                                 <Text
                                     className=' text-text/50'
                                 >
-                                    {formatDate()}
+                                    {format_date()}
                                 </Text>
 
                                 {/* day */}
                                 <Text
                                     className='text-xl text-text font-medium'
                                 >
-                                    {handleDayNames()}
+                                    {handle_day_names()}
                                 </Text>
                             </View>
 
@@ -243,7 +307,7 @@ const index = () => {
                                 renderItem={({item}) => (
                                     <CategoryBtn
                                         name={item}  
-                                        onPress={() => handleCategorySelect(item)}
+                                        onPress={() => handle_category_select(item)}
                                         isActive={selected_category === item}
                                     />
                                 )}
@@ -253,15 +317,45 @@ const index = () => {
                         </View>
                     </View>
 
-                    <SwipeListView
-                        data={tasks}
-                        className='p-1 py-2'
-                        renderItem={(rowData) => (
-                            <TaskItem
-                                data={rowData.item}
-                            />
-                        )}
-                    />
+                    <View
+                        className='w-full h-full flex-1 pb-10'
+                    >
+                        <SwipeListView
+                            data={filtered_tasks}
+                            contentContainerClassName='flex flex-col gap-2 p-1 w-full'
+                            renderItem={(rowData) => (
+                                <TaskItem
+                                    data={rowData.item}
+                                />
+                            )}
+                            renderHiddenItem={(rowData, rowMap) => (
+                                <View
+                                    className='flex-1 gap-3 w-full h-full flex flex-row items-center justify-end pr-1'
+                                >
+                                    <TouchableOpacity
+                                        className=' px-4 h-[5.8rem] rounded-md flex items-center justify-center bg-background shadow shadow-text/40'
+                                    >
+                                        <Trash2
+                                            color={'#f43f5e'}
+                                            strokeWidth={1}
+                                        />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        className=' px-4 h-[5.8rem] rounded-md flex items-center justify-center bg-background shadow shadow-text/40'
+                                    >
+                                        <Pencil
+                                            color={'#3b82f6'}
+                                            strokeWidth={1}
+                                        />
+                                    </TouchableOpacity>
+                                </View>   
+                            )}
+                            leftOpenValue={20}
+                            rightOpenValue={-125}
+                            keyExtractor={(item) => item.id}
+                            disableRightSwipe={true}
+                        />
+                    </View>
                 </View>
 
 

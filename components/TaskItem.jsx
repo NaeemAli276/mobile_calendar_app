@@ -2,7 +2,9 @@ import { View, Text, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { MapPin, Circle } from 'lucide-react-native'
 
-const TaskItem = ({ data }) => {
+const TaskItem = ({
+    data
+}) => {
 
     const [hide_description, set_hide_description] = useState(false)
 
@@ -15,87 +17,92 @@ const TaskItem = ({ data }) => {
         Education: '#8b5cf6'
     }
 
+
     return (
         <Pressable
+            className='w-max h-fit rounded-md'
             onPress={() => set_hide_description(!hide_description)}
         >
             <View
-                className='flex flex-row w-full h-fit bg-background rounded-md shadow-text/50 shadow'
+                className='flex flex-row h-fit bg-background rounded-md shadow shadow-text/40'
             >
-                
-                {/* time it starts or due */}
+
+                {/* time */}
                 <View
-                    className='w-fit h-fit p-4 py-6 flex items-center justify-center flex-col border-r border-text/40'
+                    className='py-5 px-2 flex flex-col gap-1 border-r border-text/20 items-center justify-center'
                 >
+
                     <Text
-                        className='text-2xl font-medium text-text'
+                        className='text-text font-medium text-lg w-14 text-center'
                     >
-                        {data.start_time}
+                        {data.time}
                     </Text>
-                    <Text
-                        className='text-text/50'
-                    >
-                        AM
-                    </Text>
+
                 </View>
 
-                {/* title, location, description, category, end_time */}
+                {/* title, desc, location and category */}
                 <View
-                    className='flex flex-col gap-2 w-full h-full p-2 px-3 justify-between'
+                    className='h-fit w-full flex flex-col justify-between p-2 px-4 gap-4'
                 >
-                    
-                    {/* title, description, location */}
+
+                    {/* title and desc */}
                     <View
-                        className='flex flex-col w-full h-fit'
+                        className='flex flex-col gap-0.5 w-max h-fit'
                     >
                         <Text
-                            className='text-lg/tight font-semibold text-text flex-1 w-[75%] '
+                            className='text-lg/tight font-semibold text-text w-[70%]'
                         >
                             {data.title}
                         </Text>
                         <Text
-                            className={`${hide_description === false && 'hidden'} w-[75%] h-fit text-text/50 text-sm flex-1`}
+                            className={`${hide_description ? 'flex' : 'hidden'} text-text/50 w-[70%]`}
                         >
                             {data.description}
                         </Text>
+                    </View>
 
-                        <View
-                            className='flex flex-row items-center pt-1 gap-1 w-full h-fit'
-                        >
-                            <MapPin
-                                strokeWidth={1}
-                                size={14}
-                                color={'#3b82f6'}
+                    {/* category and location */}
+                    <View
+                        className='flex flex-row items-center w-full justify-between'
+                    >
+                        <View 
+                            className='w-max h-fit flex-row flex gap-1.5 items-center'
+                        >  
+                            <Circle
+                                size={10}
+                                color={categoryColours[data.category]}
                             />
                             <Text
-                                className='text-primary/50 text-sm w-[75%] flex-1'
+                                className={`text-sm
+                                    ${data.category === 'Education' && 'text-violet_primary'}
+                                    ${data.category === 'Work' && 'text-primary'}
+                                    ${data.category === 'Fun' && 'text-yellow_primary'}    
+                                    ${data.category === 'Chores' && 'text-orange_primary'}    
+                                `}
+                            >
+                                {data.category}
+                            </Text>
+                        </View>
+                        <View
+                            className='flex flex-row items-center mr-[4.5rem] gap-1'
+                        >
+                            <MapPin 
+                                strokeWidth={1}
+                                color={'#6b7280'}
+                                size={14}
+                            />
+                            <Text
+                                className='text-sm text-text/50'
                             >
                                 {data.location}
                             </Text>
                         </View>
-
-                    </View>
-
-                    {/* category, start_time and end_time */}
-                    <View
-                        className='flex flex-row items-center gap-2 w-fit h-fit'
-                    >
-                        <Circle
-                            size={10}
-                            color={categoryColours[data.category]}
-                        />
-                        <Text
-                            className={`text-sm text-[${categoryColours[data.category]}]`}
-                        >
-                            {data.category}
-                        </Text>
                     </View>
 
                 </View>
 
             </View>
         </Pressable>
-        
     )
 }
 
