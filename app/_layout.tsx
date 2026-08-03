@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { useColorScheme } from 'react-native';
 
-
 export const unstable_settings = {
   anchor: '(tabs)',
 };
@@ -39,6 +38,7 @@ export default function RootLayout() {
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="createTask" />
       </Stack>
     </ThemeProvider>
   

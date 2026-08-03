@@ -7,9 +7,14 @@ import { Plus, Trash2, Pencil } from 'lucide-react-native'
 import CategoryBtn from '../components/CategoryBtn'
 import { SwipeListView } from 'react-native-swipe-list-view'
 import TaskItem from '../components/TaskItem'
+import { useRouter } from 'expo-router'
 
 const index = () => {
 
+    // used to navigate between pages
+    const router = useRouter()
+
+    // loads all the tasks from storage
     const tasks = ([
         {
             id: 0,
@@ -175,12 +180,12 @@ const index = () => {
         handle_filter_tasks(selected_date,selected_category)
     }, [])
 
-    useEffect(() => {
-        console.log('selected_category: ', selected_category)
-        console.log('selected_date: ', selected_date)
-        console.log('filtered_tasks: ', filtered_tasks)
-        handle_filter_tasks(selected_date,selected_category)
-    }, [selected_category, selected_date])
+    // useEffect(() => {
+    //     console.log('selected_category: ', selected_category)
+    //     console.log('selected_date: ', selected_date)
+    //     console.log('filtered_tasks: ', filtered_tasks)
+    //     handle_filter_tasks(selected_date,selected_category)
+    // }, [selected_category, selected_date])
 
     return (
         <SafeAreaView
@@ -207,6 +212,9 @@ const index = () => {
                     {/* create new task btn */}
                     <TouchableOpacity
                         className='p-1 '
+                        onPress={() => router.push({
+                            pathname: '/modifyTask',
+                        })} // navigates to the modifyTask page with an empty object to create a new task
                     >
                         <Plus
                             color={'#ffffff'}
@@ -342,6 +350,10 @@ const index = () => {
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         className=' px-4 h-[5.8rem] rounded-md flex items-center justify-center bg-background shadow shadow-text/40'
+                                        onPress={() => router.push({
+                                            pathname: '/modifyTask',
+                                            params: rowData.item
+                                        })} // navigates to the modifyTask page with object to modify the task
                                     >
                                         <Pencil
                                             color={'#3b82f6'}

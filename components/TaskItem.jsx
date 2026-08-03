@@ -2,6 +2,7 @@ import { View, Text, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { MapPin, Circle } from 'lucide-react-native'
 
+
 const TaskItem = ({
     data
 }) => {
@@ -69,7 +70,7 @@ const TaskItem = ({
                             className='w-max h-fit flex-row flex gap-1.5 items-center'
                         >  
                             <Circle
-                                size={10}
+                                size={8}
                                 color={categoryColours[data.category]}
                             />
                             <Text
