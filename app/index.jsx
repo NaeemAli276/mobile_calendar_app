@@ -21,43 +21,43 @@ const index = () => {
             title: 'Biology exam',
             location: 'UoB, C4.01',
             description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            time: '10:00 AM',
             category: 'Education',
-            date: '2026-09-22'
+            date: new Date().toISOString().substring(0,10),
+            time: new Date().toISOString().substring(11,15)
         },
         {
             id: 1,
             title: 'Clean the house',
             location: 'Home',
             description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            time: '10:00 AM',
             category: 'Chores',
-            date: '2026-09-22'
+            date: new Date().toISOString().substring(0,10),
+            time: new Date().toISOString().substring(11,15)
         },
         {
             id: 2,
             title: 'Finish the fyp project',
             location: 'Richmond',
             description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            time: '01:00 PM',
             category: 'Education',
-            date: '2026-09-22'
+            date: new Date().toISOString().substring(0,10),
+            time: new Date().toISOString().substring(11,15)
         },
         {
             id: 3,
             title: 'Finish the calendar component design',
             location: 'Richmond',
             description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit Lorem ipsum, dolor sit',
-            time: '01:00 PM',
             category: 'Work',
-            date: '2026-09-22'
+            date: new Date().toISOString().substring(0,10),
+            time: new Date().toISOString().substring(11,15)
         }
     ])
 
     const [filtered_tasks, set_filtered_tasks] = useState([])
 
-    // const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10)) 
-    const [selected_date, set_selected_date] = useState('2026-09-22')    
+    const [selected_date, set_selected_date] = useState(new Date().toISOString().substring(0,10)) 
+    // const [selected_date, set_selected_date] = useState('2026-09-22')    
 
 
     const [selected_category, set_selected_category] = useState('None')
@@ -160,14 +160,22 @@ const index = () => {
 
         if (selected_category === 'None') {            
             const filtered_tasks = tasks.filter((task) => {
-                return task.date === selected_date
+
+                const task_date = task.date 
+                const current_date = new Date(selected_date).toISOString().substring(0,10)
+
+                return task_date === current_date
             })
 
             set_filtered_tasks(filtered_tasks)
         }
         else {
             const filtered_tasks = tasks.filter((task) => {
-                return (task.date === selected_date) && (task.category === selected_category)
+
+                const task_date = task.date 
+                const current_date = new Date(selected_date).toISOString().substring(0,10)
+
+                return (task_date === current_date) && (task.category === selected_category)
             }) 
 
             set_filtered_tasks(filtered_tasks)
@@ -179,6 +187,10 @@ const index = () => {
     useEffect(() => {
         handle_filter_tasks(selected_date,selected_category)
     }, [])
+
+    // useEffect(() => {
+    //     console.log(tasks)
+    // }, [])
 
     // useEffect(() => {
     //     console.log('selected_category: ', selected_category)
@@ -230,7 +242,7 @@ const index = () => {
 
                     {/* main calendar component */}
                     <Calendar
-                        current={selected_date}
+                        current={selected_date.substring(0,10)}
                         key={selected_date} // forces the calendar to change when the index changes
                         onDayPress={day => handle_day_select(day?.dateString)}
                         hideArrows={true}
@@ -338,7 +350,7 @@ const index = () => {
                             )}
                             renderHiddenItem={(rowData, rowMap) => (
                                 <View
-                                    className='flex-1 gap-3 w-full h-full flex flex-row items-center justify-end pr-1'
+                                    className='flex-1 gap-3 w-full flex flex-row items-center justify-end pr-1'
                                 >
                                     <TouchableOpacity
                                         className=' px-4 h-[5.8rem] rounded-md flex items-center justify-center bg-background shadow shadow-text/40'

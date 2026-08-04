@@ -1,11 +1,11 @@
-import { View, Text, TouchableOpacity, TextInput, Pressable, FlatList } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Pressable, FlatList, KeyboardAvoidingView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, ChevronDown } from 'lucide-react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
 
-const createTask = () => {
+const modifyTask = () => {
 
   const categories = [
     'Work',
@@ -21,8 +21,6 @@ const createTask = () => {
   const [task, set_task] = useState({})
 
   const [hide_categories, set_hide_categories] = useState(true) // hides or show the categories dropdown
-  const [hide_picker, set_hide_picker] = useState(true) // hides or show the categories dropdown
-  const [picker_mode, set_picker_mode] = useState('date')
 
   // just converts the date string into a more readable format
   const format_date = (dateString) => {
@@ -42,28 +40,57 @@ const createTask = () => {
 
   }
 
-  // Function to show the date picker
+    // Function to show the date picker using imperative API
   const show_date_picker = () => {
-    set_picker_mode('date');
-    set_hide_picker(false);
+    DateTimePickerAndroid.open({
+      value: task.date ? new Date(task.date) : new Date(),
+      mode: 'date',
+      is24Hour: true,
+      onChange: (event, selectedDate) => {
+        if (selectedDate) {
+          // Format the date for your task
+          const formattedDate = selectedDate.toISOString().substring(0, 10);
+          set_task({...task, date: formattedDate});
+        }
+      },
+    });
   };
 
-  // Function to show the time picker
+  // Function to show the time picker using imperative API
   const show_time_picker = () => {
-    set_picker_mode('time');
-    set_hide_picker(false);
+    DateTimePickerAndroid.open({
+      value: task.time === 'Not set' ? new Date() : new Date(`2000-01-01T${task.time}`),
+      mode: 'time',
+      is24Hour: true,
+      onChange: (event, selectedDate) => {
+        if (selectedDate) {
+          const hours = String(selectedDate.getHours()).padStart(2, '0');
+          const minutes = String(selectedDate.getMinutes()).padStart(2, '0');
+          set_task({...task, time: `${hours}:${minutes}`});
+        }
+      },
+    });
   };
 
-  // Handler for when the user selects a value or dismisses the picker
-  const handle_picker_change = (event, selectedDate) => {
-    // On Android, the picker is dismissed automatically after selection.
-    // On iOS, you need to hide it manually.
-    set_hide_picker(true);
-
-    // If the user selected a date (not just dismissed), update the state
-    if (selectedDate) {
-      set_task({...task, time: selectedDate});
+  const get_am_pm_time = (timeString) => { 
+    
+    if (timeString === 'Not set' || timeString === undefined) {
+      return 'Not set'
     }
+    else {
+      const [hours, minutes] = timeString.split(':').map(Number);
+      const ampm = hours >= 0 && hours < 12 ? 'AM' : 'PM';
+    
+      // Convert to 12-hour format
+      let hour12 = hours % 12;
+      hour12 = hour12 === 0 ? 12 : hour12; // 0 becomes 12
+      
+      // Add leading zero if hour is less than 10
+      const formattedHour = String(hour12).padStart(2, '0');
+      
+      return `${formattedHour}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    }
+    
   };
 
   useEffect(() => {
@@ -76,7 +103,7 @@ const createTask = () => {
         category: 'None',
         date: new Date().toISOString().substring(0,10),
         time: 'Not set',
-        location: ''
+        location: '',
       })
     }
     else {
@@ -84,10 +111,6 @@ const createTask = () => {
     }
 
   }, [])
-
-  useEffect(() => {
-    console.log(new Date(task.time))
-  }, [task])
 
   return (
     <SafeAreaView
@@ -171,13 +194,31 @@ const createTask = () => {
                   numberOfLines={1}
                   value={task.description}
                   onChangeText={(text) => handle_change_task('description', text)}
-                  className={'bg-background text-text border-text/20 border rounded-md placeholder:text-text/50 pl-4 font-regular pb-2 pt-7 h-40 text-start '}
+                  className={'bg-background text-text border-text/20 border rounded-md placeholder:text-text/50 pl-4 font-regular pb-2 pt-7 h-32 text-start '}
                   multiline={true}
-                  placeholder='Enter a description...'
+                  placeholder='Enter a description (optional)...'
                   textAlignVertical='top'
                   maxLength={128}
                 />
               </View>
+
+              {/* location field */}
+              <KeyboardAvoidingView
+                className={`w-full h-auto relative`}
+              >
+                <Text
+                  className={`absolute top-2 left-4 z-10 text-text/50 text-sm font-regular`}
+                >
+                  Location
+                </Text>
+                <TextInput
+                  numberOfLines={1}
+                  value={task.location}
+                  onChangeText={(text) => handle_change_task('location', text)}
+                  className={'bg-background text-text border-text/20 border rounded-md placeholder:text-text/50 pl-4 font-regular pb-2 pt-7'}
+                  placeholder='Enter a location (optional)...'
+                />
+              </KeyboardAvoidingView>
 
               {/* category field */}
               <View
@@ -218,17 +259,17 @@ const createTask = () => {
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({item}) => (
                       <Pressable
-                        className={`p-2 px-4 ${task.category === item ? 'bg-primary' : 'bg-background'}`}
+                        className={`p-2.5 px-4 ${task.category === item ? 'bg-primary' : 'bg-background'}`}
                         onPress={() => handle_change_task('category', item)}
                       >
                         <Text
-                          className={`font-medium ${task.category === item ? 'text-background' : ' text-text'}`}
+                          className={`${task.category === item ? 'text-background' : ' text-text'}`}
                         >
                           {item}
                         </Text>
                       </Pressable>
                     )}  
-                    className={`bg-background shadow-text/50 shadow w-44 rounded-md ${hide_categories ? 'hidden' : 'flex'}`}
+                    className={`bg-background shadow-text shadow-md w-44 rounded-md ${hide_categories ? 'hidden' : 'flex'}`}
                   />
                 </View>
               </View>
@@ -280,7 +321,7 @@ const createTask = () => {
                       <Text
                         className={`font-regular text-text`}
                       >
-                        {task.time}
+                        {get_am_pm_time(task.time)}
                       </Text>
                       <View
                         className={`absolute top-4 right-3`}
@@ -296,6 +337,23 @@ const createTask = () => {
                 
               </View>
 
+
+              {/* create btn */}
+              <View
+                className={`flex w-full`}
+              >
+                <TouchableOpacity
+                  className={`bg-primary p-2 flex items-center justify-center rounded-md py-3`}
+                  onPress={() => { console.log(task) }}
+                >
+                  <Text
+                    className={'text-background font-semibold text-xl'}
+                  >
+                    Create
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
             </View>
 
           </View>
@@ -304,18 +362,8 @@ const createTask = () => {
 
       </View>
 
-      {
-        hide_picker === false && picker_mode === 'time'
-        &&    <DateTimePickerAndroid
-                  value={task.time === 'Not set' ? new Date() : new Date(task.time)}
-                  mode={picker_mode}
-                  is24Hour={true}
-                  onChange={handle_picker_change}
-              />
-      }
-
     </SafeAreaView>
   )
 }
 
-export default createTask
+export default modifyTask

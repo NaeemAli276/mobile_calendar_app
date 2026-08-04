@@ -18,6 +18,19 @@ const TaskItem = ({
         Education: '#8b5cf6'
     }
 
+    const get_am_pm_time = (timeString) => {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        const ampm = hours >= 0 && hours < 12 ? 'AM' : 'PM';
+        
+        // Convert to 12-hour format
+        let hour12 = hours % 12;
+        hour12 = hour12 === 0 ? 12 : hour12; // 0 becomes 12
+        
+        // Add leading zero if hour is less than 10
+        const formattedHour = String(hour12).padStart(2, '0');
+        
+        return `${formattedHour}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    };
 
     return (
         <Pressable
@@ -36,7 +49,7 @@ const TaskItem = ({
                     <Text
                         className='text-text font-medium text-lg w-14 text-center'
                     >
-                        {data.time}
+                        {get_am_pm_time(data.time)}
                     </Text>
 
                 </View>
