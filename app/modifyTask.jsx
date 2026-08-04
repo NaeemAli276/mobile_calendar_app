@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { ArrowLeft, ChevronDown } from 'lucide-react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker'
+import { updateItem, createItem } from '../storage/Tasks'
+
 
 const modifyTask = () => {
 
@@ -20,6 +22,7 @@ const modifyTask = () => {
 
   const [task, set_task] = useState({})
 
+  const [is_updating, set_is_updating] = useState(false) // if set to true, the user is updating a task
   const [hide_categories, set_hide_categories] = useState(true) // hides or show the categories dropdown
 
   // just converts the date string into a more readable format
@@ -72,6 +75,7 @@ const modifyTask = () => {
     });
   };
 
+  // converts 24 hour format into 12 hour format, more readable
   const get_am_pm_time = (timeString) => { 
     
     if (timeString === 'Not set' || timeString === undefined) {
@@ -93,6 +97,28 @@ const modifyTask = () => {
     
   };
 
+  const handle_updating_task = async () => {
+    try {
+      await updateItem(task);
+      // Navigate back with a refresh flag
+      router.replace('/', { refresh: Date.now() });
+    } 
+    catch (error) {
+      console.error('Failed to update:', error);
+    }
+  };
+
+  const handle_creating_task = async () => {
+    try {
+      await createItem(task);
+      // Navigate back with a refresh flag
+      router.replace('/', { refresh: Date.now() });
+    } 
+    catch (error) {
+      console.error('Failed to update:', error);
+    }
+  }
+
   useEffect(() => {
     
     if (Object.keys(params).length === 0) { // checks if the object is empty
@@ -108,6 +134,7 @@ const modifyTask = () => {
     }
     else {
       set_task(params)
+      set_is_updating(true)
     }
 
   }, [])
@@ -152,9 +179,9 @@ const modifyTask = () => {
               className={'text-background text-3xl font-semibold'}
             >
               {
-                Object.keys(params).length === 0
-                ? 'Create new task'
-                : 'Update task'
+                is_updating
+                ? 'Update task' 
+                : 'Create new task'
               }
             </Text>
 
@@ -343,13 +370,21 @@ const modifyTask = () => {
                 className={`flex w-full`}
               >
                 <TouchableOpacity
-                  className={`bg-primary p-2 flex items-center justify-center rounded-md py-3`}
-                  onPress={() => { console.log(task) }}
+                  className={`bg-primary p-2 flex items-center justify-center rounded-md py-3 shadow shadow-text`}
+                  onPress={
+                    is_updating
+                    ? () => handle_updating_task()
+                    : () => handle_creating_task()
+                  }
                 >
                   <Text
                     className={'text-background font-semibold text-xl'}
                   >
-                    Create
+                    {
+                      is_updating
+                      ? 'Update'
+                      : 'Create'
+                    }
                   </Text>
                 </TouchableOpacity>
               </View>

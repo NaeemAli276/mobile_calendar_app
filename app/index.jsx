@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, FlatList, ScrollView } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Calendar } from 'react-native-calendars'
 import CustomCalendarHeader from '../components/CustomCalendarHeader'
@@ -8,6 +8,8 @@ import CategoryBtn from '../components/CategoryBtn'
 import { SwipeListView } from 'react-native-swipe-list-view'
 import TaskItem from '../components/TaskItem'
 import { useRouter } from 'expo-router'
+import { loadItems, deleteItem } from '../storage/Tasks'
+import { useFocusEffect } from '@react-navigation/native'
 
 const index = () => {
 
@@ -15,44 +17,7 @@ const index = () => {
     const router = useRouter()
 
     // loads all the tasks from storage
-    const tasks = ([
-        {
-            id: 0,
-            title: 'Biology exam',
-            location: 'UoB, C4.01',
-            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            category: 'Education',
-            date: new Date().toISOString().substring(0,10),
-            time: new Date().toISOString().substring(11,15)
-        },
-        {
-            id: 1,
-            title: 'Clean the house',
-            location: 'Home',
-            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            category: 'Chores',
-            date: new Date().toISOString().substring(0,10),
-            time: new Date().toISOString().substring(11,15)
-        },
-        {
-            id: 2,
-            title: 'Finish the fyp project',
-            location: 'Richmond',
-            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit',
-            category: 'Education',
-            date: new Date().toISOString().substring(0,10),
-            time: new Date().toISOString().substring(11,15)
-        },
-        {
-            id: 3,
-            title: 'Finish the calendar component design',
-            location: 'Richmond',
-            description: 'Lorem ipsum, dolor sit amet cons ectetur adipisicing elit Lorem ipsum, dolor sit',
-            category: 'Work',
-            date: new Date().toISOString().substring(0,10),
-            time: new Date().toISOString().substring(11,15)
-        }
-    ])
+    const [loaded_tasks, set_loaded_tasks] = useState([])
 
     const [filtered_tasks, set_filtered_tasks] = useState([])
 
@@ -155,11 +120,28 @@ const index = () => {
 
     }
 
+    // removes an item from a date
+    const handle_delete_item = async (id) => {
+
+        const deleted_item = await deleteItem(id)
+        
+        if (deleted_item == true) {
+            
+            const filtered_loaded_items = loaded_tasks.filter((item) => item.id !== id)
+            set_loaded_tasks(filtered_loaded_items)
+
+            const filtered_filter_items = filtered_tasks.filter((item) => item.id !== id)
+            set_filtered_tasks(filtered_filter_items)
+
+        }
+
+    }
+
     // filters tasks based on their category
     const handle_filter_tasks = () => {
 
         if (selected_category === 'None') {            
-            const filtered_tasks = tasks.filter((task) => {
+            const filtered_tasks = loaded_tasks.filter((task) => {
 
                 const task_date = task.date 
                 const current_date = new Date(selected_date).toISOString().substring(0,10)
@@ -170,7 +152,7 @@ const index = () => {
             set_filtered_tasks(filtered_tasks)
         }
         else {
-            const filtered_tasks = tasks.filter((task) => {
+            const filtered_tasks = loaded_tasks.filter((task) => {
 
                 const task_date = task.date 
                 const current_date = new Date(selected_date).toISOString().substring(0,10)
@@ -184,20 +166,36 @@ const index = () => {
 
     }
 
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
+            
+            const loadData = async () => {
+                try {
+                    console.log('Loading tasks...');
+                    const storedData = await loadItems();
+                    if (isActive) {
+                        set_loaded_tasks(storedData ? storedData : []);
+                    }
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                }
+            };
+
+            loadData();
+            
+            return () => {
+                isActive = false;
+            };
+        }, [router.params?.refresh]) // This triggers when refresh param changes
+    );
+
     useEffect(() => {
+        // console.log('selected_category: ', selected_category)
+        console.log('selected_date: ', selected_date)
+        // console.log('filtered_tasks: ', filtered_tasks)
         handle_filter_tasks(selected_date,selected_category)
-    }, [])
-
-    // useEffect(() => {
-    //     console.log(tasks)
-    // }, [])
-
-    // useEffect(() => {
-    //     console.log('selected_category: ', selected_category)
-    //     console.log('selected_date: ', selected_date)
-    //     console.log('filtered_tasks: ', filtered_tasks)
-    //     handle_filter_tasks(selected_date,selected_category)
-    // }, [selected_category, selected_date])
+    }, [selected_category, selected_date, loaded_tasks])
 
     return (
         <SafeAreaView
@@ -230,6 +228,7 @@ const index = () => {
                     >
                         <Plus
                             color={'#ffffff'}
+                            strokeWidth={1.5}
                         />
                     </TouchableOpacity>
 
@@ -354,6 +353,7 @@ const index = () => {
                                 >
                                     <TouchableOpacity
                                         className=' px-4 h-[5.8rem] rounded-md flex items-center justify-center bg-background shadow shadow-text/40'
+                                        onPress={() => handle_delete_item(rowData.item.id)}
                                     >
                                         <Trash2
                                             color={'#f43f5e'}
